@@ -36,8 +36,10 @@ function ListarPessoas() {
       const result = await fetch(
         "https://random-data-api.com/api/v2/users?size=55"
       )
+      
         .then((Response) => Response.json())
         .then((data) => data);
+       
       // sort result by first_name
       const sorted = result.sort((a, b) => {
         if (a.first_name < b.first_name) {
@@ -270,7 +272,7 @@ function ListarPessoas() {
                     <th className="px-6 py-4">{item.phone_number}</th>
                     <th className="px-6 py-4 flex justify-center gap-x-8">
                       <button>
-                        <a href="">
+                        
                           <FontAwesomeIcon
                             className="p-2 w-4 h-4 bg-orange-400 rounded-full text-white"
                             icon={faEdit}
@@ -283,7 +285,7 @@ function ListarPessoas() {
                               // setCurrentItens(result.slice(startIndex, endIndex));
                           
                           />
-                        </a>
+                       
                       </button>
                       {/* <button>
                         <FontAwesomeIcon
