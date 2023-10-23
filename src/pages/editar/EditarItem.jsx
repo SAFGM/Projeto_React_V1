@@ -4,7 +4,7 @@ import { Form, } from 'react-bootstrap';
 import { useState, } from "react";
 
 function EditarItem() {
-    const [nome, setNome] = useState("");
+    const  [nome, setNome] = useState("");
     const  [profissao, setDescricao] = useState("");
     const  [contato, setContato] = useState("");
     return (    <div className="text-center" >
