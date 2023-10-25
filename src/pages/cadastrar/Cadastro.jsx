@@ -2,11 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import cropImage from "../../utils/cropImage.jsx";
+import InputMask from 'react-input-mask';
 
 
 function Cadastro() {
   const [nome, setNome] = useState("");
-  const [contato, setContato] = useState("");
+  const [contato, setContato] = useState();
   const [profissao, setProfissao] = useState("");
   const [foto, setFoto] = useState("./img/profile-picture.jpeg");
 
@@ -97,10 +98,11 @@ function Cadastro() {
           >
             Telefone
           </label>
-          <input
+          <InputMask
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
             id="phone_number"
             type="tel"
+            mask="(99) 9999-9999"
             placeholder="Telefone"
             value={contato}
             onChange={(e) => setContato(e.target.value)}
