@@ -10,33 +10,33 @@ function Cadastro() {
   const [profissao, setProfissao] = useState("");
   const [foto, setFoto] = useState("./img/profile-picture.jpeg");
 
-  const navegador = useNavigate();
+  const navigate = useNavigate();
 
-  function submeter(e) {
+  function handleSubmit(e) {
     e.preventDefault();
-    const dados = {
+    const data = {
       avatar: foto,
       id: uuidv4(),
-      nome_submetido: nome,
-      contato_submetido: contato,
-      emprego: {
-        titulo: profissao,
+      first_name: nome,
+      phone_number: contato,
+      employment: {
+        title: profissao,
       },
     };
-    if (!localStorage.getItem("dados")) {
-      localStorage.setItem("dados", JSON.stringify([]));
+    if (!localStorage.getItem("data")) {
+      localStorage.setItem("data", JSON.stringify([]));
     }
-    const dataStorage = JSON.parse(localStorage.getItem("dados"));
-    dataStorage.push(dados);
-    localStorage.setItem("dados", JSON.stringify(dataStorage));
+    const dataStorage = JSON.parse(localStorage.getItem("data"));
+    dataStorage.push(data);
+    localStorage.setItem("data", JSON.stringify(dataStorage));
 
-    navegador("/");
+    navigate("/");
   }
 
   return (
     <div className="w-full h-screen flex flex-col justify-center items-center">
       <form
-        onSubmit={submeter}
+        onSubmit={handleSubmit}
         className="bg-white flex flex-col shadow-md rounded-2xl px-8 pt-6 pb-8 mb-4"
       >
         <h1 className="text-3xl text-center mb-6 text-vermelho-claro font-semibold tracking-wider">
@@ -57,16 +57,16 @@ function Cadastro() {
           </label>
           <input
             type="file"
-            id="imagArquivo"
+            id="imageFile"
             capture="user"
             className="bg-"
             accept="image/*"
             onChange={(e) => {
-              const arquivo = e.target.files[0];
-              const leitor = new FileReader();
-              leitor.readAsDataURL(arquivo);
-              leitor.onloadend = () => {
-                cropImage(leitor.result, 1).then((res) => {
+              const file = e.target.files[0];
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onloadend = () => {
+                cropImage(reader.result, 1).then((res) => {
                   setFoto(res.toDataURL());
                 });
               };
@@ -93,13 +93,13 @@ function Cadastro() {
         <div className="mb-2">
           <label
             className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="contato_submetido"
+            htmlFor="phone_number"
           >
             Telefone
           </label>
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-            id="contato_submetido"
+            id="phone_number"
             type="tel"
             placeholder="Telefone"
             value={contato}

@@ -1,60 +1,97 @@
 import { useState, useEffect,} from "react";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  faPlus,  faFilePdf, faRemove } from "@fortawesome/free-solid-svg-icons";
 import { Pagination, } from "antd";
 import classNames from "classnames";
 import cropImage from "../../utils/cropImage.jsx";
 
+import { EditarItem } from '../editar/EditarItem'
 
 
-export const ListarPessoas = () =>  {
+export const ListarPessoas = (ovelha) =>  {
+  /*
+  * Recebe os itens para o grid
+  */
+ const [itens, setItens] = useState([]);
+ /*
+ * Numero de itens por pagina
+ */
+const [itensPorPagina, setItensPorPagina] = useState(5);
 
-  const [itens, setItens] = useState([]);
-  const [itensPorPagina, setItensPorPagina] = useState(5);
-  const [paginaAtual, setPaginaAtual] = useState(1);
-  const [pesquisa, setPesquisa] = useState("");
-  const iniciarIndice = (paginaAtual - 1) * itensPorPagina;
-  const indiceFinal = iniciarIndice + itensPorPagina;
-  const [ItensAtuais, setItensAtuais] = useState([]);
-  const [ordenacaoAtual, setOrdenacaoAtual] = useState("asc");
+/*
+* Pagina atual - selecionada
+*/
+const [currentPage, setCurrentPage] = useState(1);
+
+const [pesquisa, setPesquisa] = useState("");
+
+/*
+* Filtrar os itens baseado na seleção da pagina
+*/
+const startIndex = (currentPage - 1) * itensPorPagina;
+const endIndex = startIndex + itensPorPagina;
+
+const [currentItens, setCurrentItens] = useState([]);
+
+const [currentSort, setCurrentSort] = useState("asc");
 
 
 useEffect(() => {
 
-    const buscarDados = async () => {
-      const result = await JSON.parse(localStorage.getItem("dados"));
+    const fetchData = async () => {
+      const result = await JSON.parse(localStorage.getItem("data"));
       if (!result) {
         return;
       }
       setItens(result);
-      setItensAtuais(result.slice(iniciarIndice, indiceFinal));
+      setCurrentItens(result.slice(startIndex, endIndex));
     };
-    buscarDados();
+    fetchData();
   }, []);
   
   useEffect(() => {
-    setPaginaAtual(1);
-    setItensAtuais(itens.slice(iniciarIndice, indiceFinal));
+    setCurrentPage(1);
+    setCurrentItens(itens.slice(startIndex, endIndex));
   }, [itensPorPagina]);
   
+
+
+
+  const navigator = useNavigate();
+ovelha = "1111313131355566"
+  const editar = () => {
+    return  (
+      <EditarItem ovelha={ovelha } />,
    
-  function getItensTamanhoPaginaAtual() {
-      const itensTamanhoPaginaAtual = itens.length - iniciarIndice;
-      if (itensTamanhoPaginaAtual > itensPorPagina) {
+      
+      alert(" vou chamar tela    " + "ddddd   " + <EditarItem nome={"savo"} /> ),
+      
+      navigator("/Editar")
+      
+      
+      )
+    }
+    
+    
+    function getItensLengthCurrentPage() {
+      const itensLengthCurrentPage = itens.length - startIndex;
+      if (itensLengthCurrentPage > itensPorPagina) {
         return itensPorPagina;
     } else {
-      return itensTamanhoPaginaAtual;
+      return itensLengthCurrentPage;
     }
   }
 
-  function salvarDadosLocalStorage(dados) {
-    localStorage.setItem("dados", JSON.stringify(dados));
+ 
+
+  function salvarDadosLocalStorage(data) {
+    localStorage.setItem("data", JSON.stringify(data));
   }
 
   useEffect(() => {
-    setItensAtuais(itens.slice(iniciarIndice, indiceFinal));
-  }, [paginaAtual]);
-
+    setCurrentItens(itens.slice(startIndex, endIndex));
+  }, [currentPage]);
 
   function pesquisar(pesquisa) {
     // eslint-disable-next-line no-useless-escape
@@ -65,39 +102,40 @@ useEffect(() => {
 
     const result = itens.filter((item) => {
       return (
-        item.nome_result.match(regexStartWith) ||
-        item.telefone_result.match(regexTelefone)
+        item.first_name.match(regexStartWith) ||
+        item.phone_number.match(regexTelefone)
+        // ||
+        // item.employment.title.match(regexStartWith)
       );
     });
 
-    setItensAtuais(result.slice(iniciarIndice, indiceFinal));
-    setPaginaAtual(1);
+    setCurrentItens(result.slice(startIndex, endIndex));
+    setCurrentPage(1);
   }
 
   useEffect(() => {
     if (pesquisa === "") {
-      setItensAtuais(itens.slice(iniciarIndice, indiceFinal));
+      setCurrentItens(itens.slice(startIndex, endIndex));
       return;
     }
     pesquisar(pesquisa);
   }, [pesquisa]);
 
-
-  const ordenarAsc = (tag) => {
-    if (tag === "emprego") {
-      const classificados = itens.sort((a, b) => {
-        if (a[tag].titulo < b[tag].titulo) {
+  const sortAsc = (tag) => {
+    if (tag === "employment") {
+      const sorted = itens.sort((a, b) => {
+        if (a[tag].title < b[tag].title) {
           return -1;
         }
-        if (a[tag].titulo > b[tag].titulo) {
+        if (a[tag].title > b[tag].title) {
           return 1;
         }
         return 0;
       });
-      setItens(classificados);
-      setItensAtuais(classificados.slice(iniciarIndice, indiceFinal));
+      setItens(sorted);
+      setCurrentItens(sorted.slice(startIndex, endIndex));
     } else {
-      const classificados = itens.sort((a, b) => {
+      const sorted = itens.sort((a, b) => {
         if (a[tag] < b[tag]) {
           return -1;
         }
@@ -106,27 +144,26 @@ useEffect(() => {
         }
         return 0;
       });
-      setItens(classificados);
-      setItensAtuais(classificados.slice(iniciarIndice, indiceFinal));
+      setItens(sorted);
+      setCurrentItens(sorted.slice(startIndex, endIndex));
     }
   };
 
-
-  const ordenarDesc = (tag) => {
-    if (tag === "emprego") {
-      const classificados = itens.sort((a, b) => {
-        if (a[tag].titulo > b[tag].titulo) {
+  const sortDesc = (tag) => {
+    if (tag === "employment") {
+      const sorted = itens.sort((a, b) => {
+        if (a[tag].title > b[tag].title) {
           return -1;
         }
-        if (a[tag].titulo < b[tag].titulo) {
+        if (a[tag].title < b[tag].title) {
           return 1;
         }
         return 0;
       });
-      setItens(classificados);
-      setItensAtuais(classificados.slice(iniciarIndice,indiceFinal));
+      setItens(sorted);
+      setCurrentItens(sorted.slice(startIndex, endIndex));
     } else {
-      const classificados = itens.sort((a, b) => {
+      const sorted = itens.sort((a, b) => {
         if (a[tag] > b[tag]) {
           return -1;
         }
@@ -135,41 +172,37 @@ useEffect(() => {
         }
         return 0;
       });
-      setItens(classificados);
-      setItensAtuais(classificados.slice(iniciarIndice, indiceFinal));
+      setItens(sorted);
+      setCurrentItens(sorted.slice(startIndex, endIndex));
     }
   };
 
-/*
-*  Ordenar tabela
-*/
-  const ordenarTable = (e, tag) => {
-    if (ordenacaoAtual === "asc") {
-      setOrdenacaoAtual("desc");
+  const sortTable = (e, tag) => {
+    if (currentSort === "asc") {
+      setCurrentSort("desc");
       const tds = document.querySelectorAll("th");
       tds.forEach((th) => {
         th.innerHTML = th.innerHTML.replace(" ▲", "");
         th.innerHTML = th.innerHTML.replace(" ▼", "");
       });
       e.target.innerHTML = `${e.target.innerHTML} ▼`;
-      ordenarDesc(tag);
+      sortDesc(tag);
     } else {
       const tds = document.querySelectorAll("th");
       tds.forEach((th) => {
         th.innerHTML = th.innerHTML.replace(" ▲", "");
         th.innerHTML = th.innerHTML.replace(" ▼", "");
       });
-      setOrdenacaoAtual("asc");
+      setCurrentSort("asc");
       e.target.innerHTML = `${e.target.innerHTML} ▲`;
-      ordenarAsc(tag);
+      sortAsc(tag);
     }
     editarLinha()
   };
   
-
   function editarLinha(item) {
     item.currentTarget.style.display = "none";
-   
+    // nextSibling display none
     item.currentTarget.nextSibling.style.display = "none";
     
     item.currentTarget.parentNode.querySelector("#btnPDF").style.display =
@@ -179,10 +212,9 @@ useEffect(() => {
     
     console.log("dfnsdfasdlflsdjflksdlkflksdlksdlk",item.name)
     
-    /*
-    *  add salvar button
-    *  alterar th de linha para entrada
-    */
+    
+    // add salvar button
+    // change th of row to input
     const tds = item.currentTarget.parentNode.parentNode.querySelectorAll("td");
     tds.forEach((td) => {
       if (td.classList.contains("actions")) {
@@ -239,11 +271,11 @@ useEffect(() => {
         if (i.id === parent.id) {
           return {
             ...i,
-            nome_result: nome,
-            telefone_result: telefone,
-            emprego: {
-              ...i.emprego,
-              titulo: profissao,
+            first_name: nome,
+            phone_number: telefone,
+            employment: {
+              ...i.employment,
+              title: profissao,
             },
           };
         }
@@ -252,7 +284,7 @@ useEffect(() => {
 
       salvarDadosLocalStorage(result);
       setItens(result);
-      setItensAtuais(result.slice(iniciarIndice, indiceFinal));
+      setCurrentItens(result.slice(startIndex, endIndex));
 
       const tds = parent.querySelectorAll("td");
       tds.forEach((th) => {
@@ -279,6 +311,8 @@ useEffect(() => {
     });
 
     item.currentTarget.parentNode.appendChild(salvarButton);
+
+
    }
 
   return (
@@ -332,21 +366,21 @@ useEffect(() => {
                   <span className="sr-only">Image</span>
                 </th>
                 <th
-                  onClick={(e) => ordenarTable(e, "nome_result")}
+                  onClick={(e) => sortTable(e, "first_name")}
                   scope="col"
                   className="cursor-pointer px-6 py-3 w-[30%] text-xl"
                 >
                   Nome ▲
                 </th>
                 <th
-                  onClick={(e) => ordenarTable(e, "telefone_result")}
+                  onClick={(e) => sortTable(e, "phone_number")}
                   scope="col"
                   className="cursor-pointer px-6 py-3 w-[20%] text-xl"
                 >
                   Telefone
                 </th>
                 <th
-                  onClick={(e) => ordenarTable(e, "emprego")}
+                  onClick={(e) => sortTable(e, "employment")}
                   scope="col"
                   className="cursor-pointer px-6 py w-[20%] text-xl"
                 >
@@ -361,7 +395,7 @@ useEffect(() => {
               </tr>
             </thead>
             <tbody>
-              {ItensAtuais.map((item, index) => {
+              {currentItens.map((item, index) => {
                 return (
                   <tr
                     className={classNames({
@@ -390,26 +424,33 @@ useEffect(() => {
                       scope="row"
                       className="nome pl-2 pr-6 text-base font-semibold whitespace-nowrap "
                     >
-                      {item.nome_result}
+                      {item.first_name}
                     </td>
                     <td className="telefone px-6 font-normal text-base">
-                      {item.telefone_reuslt}
+                      {item.phone_number}
                     </td>
                     <td className="profissao px-6 text-base font-normal">
-                      {item.emprego.titulo}
+                      {item.employment.title}
                     </td>
                     <td>
                     <a>
                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     </a> 
-                    <button>
-                      {/* Editar para gerar PDF aqui */}
+                    <button 
+                    value={"dfsdfsdj"}
+                     onClick={() => editar()}>    
+                    
                     
                        <FontAwesomeIcon
                             className="p-2 w-4 h-4 bg-violet-700 rounded-full text-white"
                             icon={faFilePdf}/>
-                      </button>
 
+                          
+                          
+                      </button>
+                        
+                     
+                      
                       &nbsp;&nbsp;
                       <button id="btnRemove">
                         <FontAwesomeIcon
@@ -421,10 +462,23 @@ useEffect(() => {
                             });
                             salvarDadosLocalStorage(result);
                             setItens(result);
-                            setItensAtuais(result.slice(iniciarIndice, indiceFinal));
+                            setCurrentItens(result.slice(startIndex, endIndex));
                           }}
                           />
                       </button>
+                          {/* </button> */} 
+                          {/* <button
+                             id="btnEdit"
+                             onClick={(item) => {
+                               console.log(2);
+                               editarLinha(item);
+                             }}
+                           >
+                              <FontAwesomeIcon
+                              className="p-2 w-4 h-4 bg-orange-400 rounded-full text-white"
+                              icon={faEdit}
+                              /> 
+                            </button>   */}
                     </td>
                   </tr>
                 );
@@ -437,9 +491,9 @@ useEffect(() => {
               "py-4 flex items-center justify-center w-full",
               {
                 "bg-[#f4f4f4] text-cinza-escuro hover:bg-red-100":
-                  getItensTamanhoPaginaAtual() % 2 === 1,
+                  getItensLengthCurrentPage() % 2 === 1,
                 "bg-white text-cinza-escuro hover:bg-red-50":
-                  getItensTamanhoPaginaAtual() % 2 === 0,
+                  getItensLengthCurrentPage() % 2 === 0,
               }
             )}
           >
@@ -468,13 +522,13 @@ useEffect(() => {
 
             <Pagination
               onChange={(page, pageSize) => {
-                setPaginaAtual(page);
+                setCurrentPage(page);
                 setItensPorPagina(pageSize);
               }}
               defaultCurrent={1}
               pageSizeOptions={[5, 10, 15, 20]}
               pageSize={itensPorPagina}
-              current={paginaAtual}
+              current={currentPage}
               total={itens.length}
               showSizeChanger={true}
               />
