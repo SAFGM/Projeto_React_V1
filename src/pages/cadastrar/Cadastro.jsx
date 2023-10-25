@@ -102,7 +102,7 @@ function Cadastro() {
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
             id="phone_number"
             type="tel"
-            mask="(99) 9999-9999"
+            mask="(99) 9999-99999"
             placeholder="Telefone"
             value={contato}
             onChange={(e) => setContato(e.target.value)}
