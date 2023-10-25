@@ -1,103 +1,103 @@
-import { useState, useEffect } from "react";
-import {  useNavigate,  } from "react-router-dom";
+import { useState, useEffect,} from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faPlus, } from "@fortawesome/free-solid-svg-icons";
-import { Pagination } from "antd";
+import {  faPlus,  faFilePdf, faRemove } from "@fortawesome/free-solid-svg-icons";
+import { Pagination, } from "antd";
 import classNames from "classnames";
+import cropImage from "../../utils/cropImage.jsx";
 
-function ListarPessoas() {
-  
-  /*
-   * recebo os itens para o grid
-   */
+
+
+export const ListarPessoas = () =>  {
+
   const [itens, setItens] = useState([]);
-  /*
-   * Numero de itens por pagina
-   */
   const [itensPorPagina, setItensPorPagina] = useState(5);
-
-  /*
-   * Pagina atual - selecionada
-   */
-  const [currentPage, setCurrentPage] = useState(1);
-
+  const [paginaAtual, setPaginaAtual] = useState(1);
   const [pesquisa, setPesquisa] = useState("");
+  const iniciarIndice = (paginaAtual - 1) * itensPorPagina;
+  const indiceFinal = iniciarIndice + itensPorPagina;
+  const [ItensAtuais, setItensAtuais] = useState([]);
+  const [ordenacaoAtual, setOrdenacaoAtual] = useState("asc");
 
-  /*
-   * Filtrar os itens baseado na seleção da pagina
-   */
-  const startIndex = (currentPage - 1) * itensPorPagina;
-  const endIndex = startIndex + itensPorPagina;
-  const [currentItens, setCurrentItens] = useState([]);
-  const [currentSort, setCurrentSort] = useState("asc");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const result = await fetch(
-        "https://random-data-api.com/api/v2/users?size=55"
-      )
-      
-        .then((Response) => Response.json())
-        .then((data) => data);
-       
-      // sort result by first_name
-      const sorted = result.sort((a, b) => {
-        if (a.first_name < b.first_name) {
-          return -1;
-        }
-        if (a.first_name > b.first_name) {
-          return 1;
-        }
-        return 0;
-      });
-      setItens(sorted);
-      setCurrentItens(sorted.slice(startIndex, endIndex));
+useEffect(() => {
+
+    const buscarDados = async () => {
+      const result = await JSON.parse(localStorage.getItem("dados"));
+      if (!result) {
+        return;
+      }
+      setItens(result);
+      setItensAtuais(result.slice(iniciarIndice, indiceFinal));
     };
-    fetchData();
+    buscarDados();
   }, []);
-
+  
   useEffect(() => {
-    setCurrentPage(1);
-    setCurrentItens(itens.slice(startIndex, endIndex));
+    setPaginaAtual(1);
+    setItensAtuais(itens.slice(iniciarIndice, indiceFinal));
   }, [itensPorPagina]);
+  
+   
+  function getItensTamanhoPaginaAtual() {
+      const itensTamanhoPaginaAtual = itens.length - iniciarIndice;
+      if (itensTamanhoPaginaAtual > itensPorPagina) {
+        return itensPorPagina;
+    } else {
+      return itensTamanhoPaginaAtual;
+    }
+  }
+
+  function salvarDadosLocalStorage(dados) {
+    localStorage.setItem("dados", JSON.stringify(dados));
+  }
 
   useEffect(() => {
-    setCurrentItens(itens.slice(startIndex, endIndex));
-  }, [currentPage]);
+    setItensAtuais(itens.slice(iniciarIndice, indiceFinal));
+  }, [paginaAtual]);
 
-  useEffect(() => {
+
+  function pesquisar(pesquisa) {
     // eslint-disable-next-line no-useless-escape
     const pesquisaRegex = pesquisa.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 
-    const regexName = new RegExp(`^${pesquisaRegex}`, "gi");
+    const regexStartWith = new RegExp(`^${pesquisaRegex}`, "gi");
     const regexTelefone = new RegExp(`${pesquisaRegex}`, "gi");
 
     const result = itens.filter((item) => {
       return (
-        item.first_name.match(regexName) ||
-        item.phone_number.match(regexTelefone)
+        item.nome_result.match(regexStartWith) ||
+        item.telefone_result.match(regexTelefone)
       );
     });
 
-    setCurrentItens(result.slice(startIndex, endIndex));
-    setCurrentPage(1);
+    setItensAtuais(result.slice(iniciarIndice, indiceFinal));
+    setPaginaAtual(1);
+  }
+
+  useEffect(() => {
+    if (pesquisa === "") {
+      setItensAtuais(itens.slice(iniciarIndice, indiceFinal));
+      return;
+    }
+    pesquisar(pesquisa);
   }, [pesquisa]);
 
-  const sortAsc = (tag) => {
-    if (tag === "employment") {
-      const sorted = itens.sort((a, b) => {
-        if (a[tag].title < b[tag].title) {
+
+  const ordenarAsc = (tag) => {
+    if (tag === "emprego") {
+      const classificados = itens.sort((a, b) => {
+        if (a[tag].titulo < b[tag].titulo) {
           return -1;
         }
-        if (a[tag].title > b[tag].title) {
+        if (a[tag].titulo > b[tag].titulo) {
           return 1;
         }
         return 0;
       });
-      setItens(sorted);
-      setCurrentItens(sorted.slice(startIndex, endIndex));
+      setItens(classificados);
+      setItensAtuais(classificados.slice(iniciarIndice, indiceFinal));
     } else {
-      const sorted = itens.sort((a, b) => {
+      const classificados = itens.sort((a, b) => {
         if (a[tag] < b[tag]) {
           return -1;
         }
@@ -106,26 +106,27 @@ function ListarPessoas() {
         }
         return 0;
       });
-      setItens(sorted);
-      setCurrentItens(sorted.slice(startIndex, endIndex));
+      setItens(classificados);
+      setItensAtuais(classificados.slice(iniciarIndice, indiceFinal));
     }
   };
 
-  const sortDesc = (tag) => {
-    if (tag === "employment") {
-      const sorted = itens.sort((a, b) => {
-        if (a[tag].title > b[tag].title) {
+
+  const ordenarDesc = (tag) => {
+    if (tag === "emprego") {
+      const classificados = itens.sort((a, b) => {
+        if (a[tag].titulo > b[tag].titulo) {
           return -1;
         }
-        if (a[tag].title < b[tag].title) {
+        if (a[tag].titulo < b[tag].titulo) {
           return 1;
         }
         return 0;
       });
-      setItens(sorted);
-      setCurrentItens(sorted.slice(startIndex, endIndex));
+      setItens(classificados);
+      setItensAtuais(classificados.slice(iniciarIndice,indiceFinal));
     } else {
-      const sorted = itens.sort((a, b) => {
+      const classificados = itens.sort((a, b) => {
         if (a[tag] > b[tag]) {
           return -1;
         }
@@ -134,50 +135,156 @@ function ListarPessoas() {
         }
         return 0;
       });
-      setItens(sorted);
-      setCurrentItens(sorted.slice(startIndex, endIndex));
+      setItens(classificados);
+      setItensAtuais(classificados.slice(iniciarIndice, indiceFinal));
     }
   };
 
-  const sortTable = (e, tag) => {
-    if (currentSort === "default") {
-      setCurrentSort("asc");
-      const ths = document.querySelectorAll("th");
-      ths.forEach((th) => {
-        th.innerHTML = th.innerHTML.replace(" ▲", "");
-        th.innerHTML = th.innerHTML.replace(" ▼", "");
-      });
-      e.target.innerHTML = `${e.target.innerHTML} ▲`;
-      sortAsc(tag);
-    } else if (currentSort === "asc") {
-      setCurrentSort("desc");
-      const ths = document.querySelectorAll("th");
-      ths.forEach((th) => {
+/*
+*  Ordenar tabela
+*/
+  const ordenarTable = (e, tag) => {
+    if (ordenacaoAtual === "asc") {
+      setOrdenacaoAtual("desc");
+      const tds = document.querySelectorAll("th");
+      tds.forEach((th) => {
         th.innerHTML = th.innerHTML.replace(" ▲", "");
         th.innerHTML = th.innerHTML.replace(" ▼", "");
       });
       e.target.innerHTML = `${e.target.innerHTML} ▼`;
-      sortDesc(tag);
+      ordenarDesc(tag);
     } else {
-      const ths = document.querySelectorAll("th");
-      ths.forEach((th) => {
+      const tds = document.querySelectorAll("th");
+      tds.forEach((th) => {
         th.innerHTML = th.innerHTML.replace(" ▲", "");
         th.innerHTML = th.innerHTML.replace(" ▼", "");
       });
-      setCurrentSort("asc");
+      setOrdenacaoAtual("asc");
       e.target.innerHTML = `${e.target.innerHTML} ▲`;
-      sortAsc(tag);
+      ordenarAsc(tag);
     }
+    editarLinha()
   };
+  
 
-  const navigator = useNavigate();
-  const handlePrintar = () => {
-     return navigator("/Editar");
-  }
+  function editarLinha(item) {
+    item.currentTarget.style.display = "none";
+   
+    item.currentTarget.nextSibling.style.display = "none";
+    
+    item.currentTarget.parentNode.querySelector("#btnPDF").style.display =
+    "none";
+    
+    const parent = item.currentTarget.parentNode.parentNode;
+    
+    console.log("dfnsdfasdlflsdjflksdlkflksdlksdlk",item.name)
+    
+    /*
+    *  add salvar button
+    *  alterar th de linha para entrada
+    */
+    const tds = item.currentTarget.parentNode.parentNode.querySelectorAll("td");
+    tds.forEach((td) => {
+      if (td.classList.contains("actions")) {
+        return;
+      }
+      if (td.classList.contains("foto")) {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        input.capture = "user";
+        input.id = "imageFile";
+        input.className = "w-full p-2 rounded-lg border border-gray-300";
+        input.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onloadend = () => {
+            cropImage(reader.result, 1).then((res) => {
+              td.querySelector("img").src = res.toDataURL();
+            });
+          };
+        });
+        td.innerHTML = "";
+        td.appendChild(input);
+      }
+      const input = document.createElement("input");
+      input.value = td.innerHTML;
+      input.name = td.classList[0];
+      input.className = "w-full p-2 rounded-lg border border-gray-300";
+      if (td.classList.contains("nome")) {
+        input.className += " nome";
+      }
+      if (td.classList.contains("telefone")) {
+        input.className += " telefone";
+      }
+      if (td.classList.contains("profissao")) {
+        input.className += " profissao";
+      }
+      td.innerHTML = "";
+      td.appendChild(input);
+    });
 
+
+    const salvarButton = document.createElement("button");
+    salvarButton.innerHTML = "Salvar";
+    salvarButton.className =
+      "bg-vermelho-claro text-white font-semibold px-6 py-2 rounded-lg";
+    salvarButton.addEventListener("click", () => {
+      const nome = parent.querySelector("[name='nome']").value;
+      const telefone = parent.querySelector("[name='telefone']").value;
+      const profissao = parent.querySelector("[name='profissao']").value;
+
+      const result = itens.map((i) => {
+        if (i.id === parent.id) {
+          return {
+            ...i,
+            nome_result: nome,
+            telefone_result: telefone,
+            emprego: {
+              ...i.emprego,
+              titulo: profissao,
+            },
+          };
+        }
+        return i;
+      });
+
+      salvarDadosLocalStorage(result);
+      setItens(result);
+      setItensAtuais(result.slice(iniciarIndice, indiceFinal));
+
+      const tds = parent.querySelectorAll("td");
+      tds.forEach((th) => {
+        if (th.classList.contains("actions")) {
+          return;
+        }
+        if (th.classList.contains("foto")) {
+          return;
+        }
+        th.innerHTML = th.querySelector("input").value;
+      });
+    });
+
+    salvarButton.addEventListener("click", () => {
+      const btnEdit = parent.querySelector("#btnEdit");
+      const btnRemove = parent.querySelector("#btnRemove");
+      const btnPDF = parent.querySelector("#btnPDF");
+
+      btnEdit.style.display = "block";
+      btnRemove.style.display = "block";
+      btnPDF.style.display = "block";
+
+      salvarButton.remove();
+    });
+
+    item.currentTarget.parentNode.appendChild(salvarButton);
+   }
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen mt-24 mb-10 gap-y-12">
+   
+    <div className="flex flex-col items-center w-full min-h-screen mt-20 mb-10 gap-y-12">
+      <script src="http://localhost:8097"></script>
       <h1 className="text-6xl tracking-wider font-semibold">
         Lista de Pessoas
       </h1>
@@ -212,35 +319,38 @@ function ListarPessoas() {
               }}
               id="table-search"
               value={pesquisa}
-              className="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+              className="block p-2 pl-10 text-lg text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Pesquisar"
             />
           </div>
         </div>
-        <div className="relative flex flex-col items-center overflow-x-auto shadow-md rounded-t-lg w-[1280px] mb-10 border-b-2 border-vermelho-claro">
+        <div className="relative flex flex-col items-center overflow-x-auto shadow-lg rounded-t-lg w-[1280px] mb-10 border-b-2 border-vermelho-claro">
           <table className="w-full text-sm text-left text-gray-600 table-fixed">
             <thead className="text-xs bg-vermelho-claro text-white uppercase">
               <tr>
+                <th scope="col" className="px-6 py-3 w-[4%]">
+                  <span className="sr-only">Image</span>
+                </th>
                 <th
-                  onClick={(e) => sortTable(e, "first_name")}
+                  onClick={(e) => ordenarTable(e, "nome_result")}
                   scope="col"
-                  className="cursor-pointer px-6 py-3 w-[25%] text-xl"
+                  className="cursor-pointer px-6 py-3 w-[30%] text-xl"
                 >
                   Nome ▲
                 </th>
                 <th
-                  onClick={(e) => sortTable(e, "employment")}
+                  onClick={(e) => ordenarTable(e, "telefone_result")}
                   scope="col"
-                  className="cursor-pointer px-6 py w-[35%] text-xl"
-                >
-                  Profissão
-                </th>
-                <th
-                  onClick={(e) => sortTable(e, "phone_number")}
-                  scope="col"
-                  className="cursor-pointer px-6 py-3 w-[25%] text-xl"
+                  className="cursor-pointer px-6 py-3 w-[20%] text-xl"
                 >
                   Telefone
+                </th>
+                <th
+                  onClick={(e) => ordenarTable(e, "emprego")}
+                  scope="col"
+                  className="cursor-pointer px-6 py w-[20%] text-xl"
+                >
+                  Profissão
                 </th>
                 <th
                   scope="col"
@@ -251,7 +361,7 @@ function ListarPessoas() {
               </tr>
             </thead>
             <tbody>
-              {currentItens.map((item, index) => {
+              {ItensAtuais.map((item, index) => {
                 return (
                   <tr
                     className={classNames({
@@ -261,33 +371,47 @@ function ListarPessoas() {
                         index % 2 === 1,
                     })}
                     key={item.id}
+                    id={item.id}
                   >
-                    <th
+                    <td className="foto p-4">
+                      <img
+                        width={50}
+                        height={50}
+                        className="rounded-full"
+                        src={
+                          item.avatar
+                            ? item.avatar
+                            : "./img/profile-picture.jpeg"
+                        }
+                        alt="Profile Picture"
+                      />
+                    </td>
+                    <td
                       scope="row"
-                      className="px-6 py-4 font-medium whitespace-nowrap "
+                      className="nome pl-2 pr-6 text-base font-semibold whitespace-nowrap "
                     >
-                      {item.first_name}
-                    </th>
-                    <th className="px-6 py-4">{item.employment.title}</th>
-                    <th className="px-6 py-4">{item.phone_number}</th>
-                    <th className="px-6 py-4 flex justify-center gap-x-8">
-                      <button>
-                        
-                          <FontAwesomeIcon
-                            className="p-2 w-4 h-4 bg-orange-400 rounded-full text-white"
-                            icon={faEdit}
-                            onClick={handlePrintar}
-                              // const result = itens.filter((i) => {
-                               
-                              //   return i.id !== item.id;
-                              // });
-                              // setItens(result);
-                              // setCurrentItens(result.slice(startIndex, endIndex));
-                          
-                          />
-                       
+                      {item.nome_result}
+                    </td>
+                    <td className="telefone px-6 font-normal text-base">
+                      {item.telefone_reuslt}
+                    </td>
+                    <td className="profissao px-6 text-base font-normal">
+                      {item.emprego.titulo}
+                    </td>
+                    <td>
+                    <a>
+                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </a> 
+                    <button>
+                      {/* Editar para gerar PDF aqui */}
+                    
+                       <FontAwesomeIcon
+                            className="p-2 w-4 h-4 bg-violet-700 rounded-full text-white"
+                            icon={faFilePdf}/>
                       </button>
-                      {/* <button>
+
+                      &nbsp;&nbsp;
+                      <button id="btnRemove">
                         <FontAwesomeIcon
                           className="p-2 w-4 h-4 bg-vermelho-claro rounded-full text-white"
                           icon={faRemove}
@@ -295,32 +419,33 @@ function ListarPessoas() {
                             const result = itens.filter((i) => {
                               return i.id !== item.id;
                             });
+                            salvarDadosLocalStorage(result);
                             setItens(result);
-                            setCurrentItens(result.slice(startIndex, endIndex));
+                            setItensAtuais(result.slice(iniciarIndice, indiceFinal));
                           }}
-                        />
-                      </button> */}
-                    </th>
+                          />
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+
           <div
             className={classNames(
-              "bg-white py-4 flex items-center justify-center w-full",
+              "py-4 flex items-center justify-center w-full",
               {
-                "bg-[#f3f3f3] text-cinza-escuro hover:bg-red-100":
-                  itensPorPagina % 2 === 1,
+                "bg-[#f4f4f4] text-cinza-escuro hover:bg-red-100":
+                  getItensTamanhoPaginaAtual() % 2 === 1,
                 "bg-white text-cinza-escuro hover:bg-red-50":
-                  itensPorPagina % 2 === 0,
+                  getItensTamanhoPaginaAtual() % 2 === 0,
               }
             )}
           >
             <a
               href="/Cadastro"
-              className="bg-vermelho-claro flex items-center justify-center  w-10 h-10 text-white rounded-full"
-            >
+              className="bg-vermelho-claro flex items-center justify-center  w-10 h-10 text-white rounded-full">
               <FontAwesomeIcon icon={faPlus} />
             </a>
           </div>
@@ -337,31 +462,31 @@ function ListarPessoas() {
             aria-label="Table navigation"
           >
             <span className="text-sm font-normal m-0 text-gray-500 ">
-              Mostrando{" "}
-              <span className="font-semibold text-gray-900 ">
-                {startIndex} - {endIndex}
-              </span>{" "}
-              de{" "}
-              <span className="font-semibold text-gray-900 ">
-                {itens.length}
-              </span>
+              Itens {" "} {itens.length}
+              <span className="font-semibold text-gray-900 "></span>
             </span>
+
             <Pagination
               onChange={(page, pageSize) => {
-                setCurrentPage(page);
+                setPaginaAtual(page);
                 setItensPorPagina(pageSize);
               }}
               defaultCurrent={1}
               pageSizeOptions={[5, 10, 15, 20]}
               pageSize={itensPorPagina}
-              current={currentPage}
+              current={paginaAtual}
               total={itens.length}
-            />
+              showSizeChanger={true}
+              />
           </nav>
         </div>
+        
       </div>
     </div>
+     
+      
   );
 }
+
 
 export default ListarPessoas;

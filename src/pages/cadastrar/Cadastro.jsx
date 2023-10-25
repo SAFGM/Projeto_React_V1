@@ -1,128 +1,145 @@
-import {  useNavigate,  } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-
-import { Button, Form, Modal} from 'react-bootstrap';
-import CadastroModel from '../../model/cadasto.model';
+import { v4 as uuidv4 } from "uuid";
+import cropImage from "../../utils/cropImage.jsx";
 
 
 function Cadastro() {
+  const [nome, setNome] = useState("");
+  const [contato, setContato] = useState("");
+  const [profissao, setProfissao] = useState("");
+  const [foto, setFoto] = useState("./img/profile-picture.jpeg");
 
-    const [nome, setNome] = useState("");
-    const  [profissao, setDescricao] = useState("");
-    const  [contato, setContato] = useState("");
-   
-    const [formValid, setFormValid] = useState(false);
-    const [exibirModal, setExibirModal] = useState(false);
+  const navegador = useNavigate();
 
-    
-    function cadastrar(event) {
-        event.preventDefault();
-        setFormValid(true);
-        if(event.currentTarget.checkValidity() === true) {
-            // obtem os dados p/ cadastro
-            const cadastroDB = localStorage['cadastros']; 
-            const cadastros = cadastroDB ? JSON.parse(cadastroDB) :  [];
-            
-            // persistir 
-            cadastros.push(new CadastroModel(new Date().getTime(), nome, profissao, contato));
-            localStorage['cadastros'] =  JSON.stringify(cadastros);
-            setExibirModal(true);
-        }
+  function submeter(e) {
+    e.preventDefault();
+    const dados = {
+      avatar: foto,
+      id: uuidv4(),
+      nome_submetido: nome,
+      contato_submetido: contato,
+      emprego: {
+        titulo: profissao,
+      },
+    };
+    if (!localStorage.getItem("dados")) {
+      localStorage.setItem("dados", JSON.stringify([]));
     }
-    
-    const navigator = useNavigate();
-    const handleFecharModal = () => {
-       return navigator("/");
-    }
+    const dataStorage = JSON.parse(localStorage.getItem("dados"));
+    dataStorage.push(dados);
+    localStorage.setItem("dados", JSON.stringify(dataStorage));
 
+    navegador("/");
+  }
 
-    return (
-        <div  className="jumbotron">
-          <h3 className="text-center"> Cadastrar</h3>
- 
-                <Form validated = {formValid}
-                    noValidate
-                    onSubmit={cadastrar}>
-
-                    <Form.Group className="mb-3">
-                        <Form.Label for="nome">Nome</Form.Label>
-                        <Form.Control
-                           type="text"
-                           placeholder="Informe seu nome"
-                           minLength={"0"}
-                           maxLength={"50"}
-                           required 
-                           value={nome}
-                           onChange={e => setNome(e.target.value)}
-                           />
-                          
-                        <Form.Control.Feedback type="invalid">
-                            Deve conter ao menos 5 caracteres.
-                        </Form.Control.Feedback>
-                    </Form.Group>
-
-                    <Form.Group>
-                        <Form.Label for="dataNascimento">Descriçao:</Form.Label>
-                        <Form.Control
-                           type="text"
-                           required
-                           value={profissao}
-                           
-                           onChange={e => setDescricao(e.target.value)} />
-
-                        <Form.Control.Feedback type="invalid">
-                            Deve conter ao menos 5 caracteres.
-                        </Form.Control.Feedback>
-                     </Form.Group>
-                     <Form.Group>
-                        <Form.Label for="telefone">Telefone:</Form.Label>
-                        <Form.Control
-                           type="text"
-                           placeholder="Informe Telefone"
-                           minLength={"0"}
-                           maxLength={"15"}
-                           required
-                                                      
-                           value={contato}
-                           onChange={e => setContato(e.target.value)} />
-
-                        <Form.Control.Feedback type="invalid">
-                            Deve conter ao menos 5 caracteres.
-                        </Form.Control.Feedback>
-                     </Form.Group>
-                     &nbsp;
-
-                    
-                    <Form.Group className="text-center">
-                        <Button className="btn btn-primary"
-                            variant="sucess"
-                            type="submit">
-                                Cadastrar
-                        </Button>
-                        &nbsp;&nbsp;&nbsp;
-                        <a href="/" className="btn btn-light">Voltar</a>
-                    </Form.Group>
-                </Form>
-                <Modal show={exibirModal} onHide={handleFecharModal}>
-                {/* <Modal show={false}> */}
-                    <Modal.Header closeButton>
-                       <Modal.Title>Sucesso</Modal.Title> 
-                    </Modal.Header>
-                    <Modal.Body>
-                        Dados adcionados com sucesso!
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button className="btn btn-primary"
-                            variant="sucess"
-                            onClick={handleFecharModal}>
-                                Continuar
-                            </Button>
-                    </Modal.Footer>
-                </Modal>
-           
-      
+  return (
+    <div className="w-full h-screen flex flex-col justify-center items-center">
+      <form
+        onSubmit={submeter}
+        className="bg-white flex flex-col shadow-md rounded-2xl px-8 pt-6 pb-8 mb-4"
+      >
+        <h1 className="text-3xl text-center mb-6 text-vermelho-claro font-semibold tracking-wider">
+          Cadastro
+        </h1>
+        <img
+          src={foto}
+          className="w-28 h-28 self-center mb-4 rounded-full"
+          alt=""
+        />
+        <div className="mb-4">
+          {/* foto */}
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="foto"
+          >
+            Foto
+          </label>
+          <input
+            type="file"
+            id="imagArquivo"
+            capture="user"
+            className="bg-"
+            accept="image/*"
+            onChange={(e) => {
+              const arquivo = e.target.files[0];
+              const leitor = new FileReader();
+              leitor.readAsDataURL(arquivo);
+              leitor.onloadend = () => {
+                cropImage(leitor.result, 1).then((res) => {
+                  setFoto(res.toDataURL());
+                });
+              };
+            }}
+          />
         </div>
-    );
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="nome"
+          >
+            Nome
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="nome"
+            type="text"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Nome"
+            required
+          />
+        </div>
+        <div className="mb-2">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="contato_submetido"
+          >
+            Telefone
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+            id="contato_submetido"
+            type="tel"
+            placeholder="Telefone"
+            value={contato}
+            onChange={(e) => setContato(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-6">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="profissao"
+          >
+            Profissão
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+            id="profissao"
+            type="text"
+            placeholder="Profissão"
+            value={profissao}
+            onChange={(e) => setProfissao(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex items-center justify-between gap-x-12">
+          <input
+            className="cursor-pointer bg-vermelho-claro hover:bg-vermelho-hover text-white font-bold py-2 px-4 rounded-2xl focus:outline-none focus:shadow-outline"
+            type="submit"
+            value="Enviar"
+          />
+          <a
+            className="inline-block mx-2 mr-4 align-baseline font-bold text-sm text-vermelho-claro hover:text-vermelho-hover"
+            href="/"
+          >
+            Cancelar
+          </a>
+        </div>
+      </form>
+    </div>
+  );
 }
 
 export default Cadastro;
