@@ -1,36 +1,19 @@
 import { useState, useEffect,} from "react";
-import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  faPlus,  faFilePdf, faRemove } from "@fortawesome/free-solid-svg-icons";
 import { Pagination, } from "antd";
 import classNames from "classnames";
 import cropImage from "../../utils/cropImage.jsx";
 
-import { EditarItem } from '../editar/EditarItem'
 
+export const ListarPessoas = () =>  {
 
-export const ListarPessoas = (ovelha) =>  {
-  /*
-  * Recebe os itens para o grid
-  */
- const [itens, setItens] = useState([]);
- /*
- * Numero de itens por pagina
- */
-const [itensPorPagina, setItensPorPagina] = useState(5);
-
-/*
-* Pagina atual - selecionada
-*/
-const [currentPage, setCurrentPage] = useState(1);
-
-const [pesquisa, setPesquisa] = useState("");
-
-/*
-* Filtrar os itens baseado na seleção da pagina
-*/
-const startIndex = (currentPage - 1) * itensPorPagina;
-const endIndex = startIndex + itensPorPagina;
+  const [itens, setItens] = useState([]);
+  const [itensPorPagina, setItensPorPagina] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pesquisa, setPesquisa] = useState("");
+  const startIndex = (currentPage - 1) * itensPorPagina;
+  const endIndex = startIndex + itensPorPagina;
 
 const [currentItens, setCurrentItens] = useState([]);
 
@@ -55,26 +38,8 @@ useEffect(() => {
     setCurrentItens(itens.slice(startIndex, endIndex));
   }, [itensPorPagina]);
   
-
-
-
-  const navigator = useNavigate();
-ovelha = "1111313131355566"
-  const editar = () => {
-    return  (
-      <EditarItem ovelha={ovelha } />,
    
-      
-      alert(" vou chamar tela    " + "ddddd   " + <EditarItem nome={"savo"} /> ),
-      
-      navigator("/Editar")
-      
-      
-      )
-    }
-    
-    
-    function getItensLengthCurrentPage() {
+  function getItensLengthCurrentPage() {
       const itensLengthCurrentPage = itens.length - startIndex;
       if (itensLengthCurrentPage > itensPorPagina) {
         return itensPorPagina;
@@ -82,8 +47,6 @@ ovelha = "1111313131355566"
       return itensLengthCurrentPage;
     }
   }
-
- 
 
   function salvarDadosLocalStorage(data) {
     localStorage.setItem("data", JSON.stringify(data));
@@ -212,9 +175,6 @@ ovelha = "1111313131355566"
     
     console.log("dfnsdfasdlflsdjflksdlkflksdlksdlk",item.name)
     
-    
-    // add salvar button
-    // change th of row to input
     const tds = item.currentTarget.parentNode.parentNode.querySelectorAll("td");
     tds.forEach((td) => {
       if (td.classList.contains("actions")) {
@@ -436,21 +396,11 @@ ovelha = "1111313131355566"
                     <a>
                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     </a> 
-                    <button 
-                    value={"dfsdfsdj"}
-                     onClick={() => editar()}>    
-                    
-                    
+                    <button >
                        <FontAwesomeIcon
                             className="p-2 w-4 h-4 bg-violet-700 rounded-full text-white"
                             icon={faFilePdf}/>
-
-                          
-                          
                       </button>
-                        
-                     
-                      
                       &nbsp;&nbsp;
                       <button id="btnRemove">
                         <FontAwesomeIcon
@@ -466,20 +416,7 @@ ovelha = "1111313131355566"
                           }}
                           />
                       </button>
-                          {/* </button> */} 
-                          {/* <button
-                             id="btnEdit"
-                             onClick={(item) => {
-                               console.log(2);
-                               editarLinha(item);
-                             }}
-                           >
-                              <FontAwesomeIcon
-                              className="p-2 w-4 h-4 bg-orange-400 rounded-full text-white"
-                              icon={faEdit}
-                              /> 
-                            </button>   */}
-                    </td>
+                     </td>
                   </tr>
                 );
               })}
