@@ -4,8 +4,7 @@ import './styles/global.css';
 import Home from './pages/listar/ListarPessoas';
 import Editar from './pages/editar/EditarItem';
 import Cadastro from './pages/cadastrar/Cadastro';
-import Envio from './pages/Envia';
-import Recebe from './pages/Recebe';
+
 
 
 function App(){
