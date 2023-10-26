@@ -1,20 +1,30 @@
+import {  useParams } from "react-router-dom";
+
+
 
 export const EditarItem = () => {
   
- 
-       
-  return   (
-    <div className="w-full h-screen flex flex-col justify-center items-center">
+    /*
+    * Recebe parametro enviado na url 
+    */
+  
+    const location = useParams();
+    const {id} = location
+   
+    console.log(location)
+   
+    
+    
+    return   (
+      <div className="w-full h-screen flex flex-col justify-center items-center">
     <form        className="bg-white flex flex-col shadow-md rounded-2xl px-8 pt-6 pb-8 mb-4"
     >
       <h1 className="text-3xl text-center mb-6 text-vermelho-claro font-semibold tracking-wider">
         Gerar Arquivo em PDF
+  
       </h1>
-      <img
-        // src={foto}
-        className="w-28 h-28 self-center mb-4 rounded-full"
-        alt=""
-      />
+      {id}
+     
 
       <div className="flex items-center justify-between gap-x-12">
           <input

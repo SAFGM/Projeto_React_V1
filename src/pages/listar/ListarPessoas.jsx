@@ -15,13 +15,17 @@ export const ListarPessoas = () =>  {
   const [pesquisa, setPesquisa] = useState("");
   const startIndex = (currentPage - 1) * itensPorPagina;
   const endIndex = startIndex + itensPorPagina;
-  var edItem = "";
-const [currentItens, setCurrentItens] = useState([]);
+  
+  const [currentItens, setCurrentItens] = useState([]);
 
-const [currentSort, setCurrentSort] = useState("asc");
+  const [currentSort, setCurrentSort] = useState("asc");
+//  const [nm, setNm]  =  useState([])
+//  const ct =""
+//  const fn =""
+  
 
 
-useEffect(() => {
+ useEffect(() => {
 
     const fetchData = async () => {
       const result = await JSON.parse(localStorage.getItem("data"));
@@ -39,17 +43,13 @@ useEffect(() => {
     setCurrentItens(itens.slice(startIndex, endIndex));
   }, [itensPorPagina]);
   
+
+
   const navegador = useNavigate()
   function editarItem(edItem){
     navegador(edItem)
 
   }
-
-  useEffect(() => {
-
-  }, [edItem]);
-
-
 
   function getItensLengthCurrentPage() {
       const itensLengthCurrentPage = itens.length - startIndex;
@@ -395,7 +395,7 @@ useEffect(() => {
                     <td
                       scope="row"
                       className="nome pl-2 pr-6 text-base font-semibold whitespace-nowrap "
-                    >
+                      >
                       {item.first_name}
                     </td>
                     <td className="telefone px-6 font-normal text-base">
@@ -407,17 +407,23 @@ useEffect(() => {
                     <td>
                     {/* <a> */}
                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <button key={item.id}>
+                    <button key={item.id} >
+                      
+                      
                       <FontAwesomeIcon
                       className="p-2 w-4 h-4 bg-violet-700 rounded-full text-white"
                       icon={faFilePdf}
-                      onClick={() => {editarItem("/Editar/${item.id}")}  }                  
+                      onClick={() => {
+                                       
+                                editarItem(`/Editar/${item.first_name}${"@"}${item.phone_number}`)}
+                      }  
+                            
+                        
                       
-                      
-                      
-                      />
+                    
+                    />
 
-           
+                       
                       </button>
                       
                       &nbsp;&nbsp;
