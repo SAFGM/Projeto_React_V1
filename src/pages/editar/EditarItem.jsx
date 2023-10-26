@@ -1,5 +1,3 @@
-// import {ListarPessoas} from '../listar/ListarPessoas'
-
 
 export const EditarItem = () => {
   

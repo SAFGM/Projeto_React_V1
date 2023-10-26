@@ -15,8 +15,6 @@ function App(){
       <Routes>
           <Route path="/" element={<Home/>}/>
           <Route path="/Cadastro" element={<Cadastro/>}/>
-          <Route path="/Envio" element={<Envio/>}/>
-          <Route path="/Recebe/:id" element={<Recebe/>}/>
           <Route path="/Editar/:id" element={<Editar/>}/>
       </Routes>
       </BrowserRouter>
