@@ -4,6 +4,7 @@ import {  faPlus,  faFilePdf, faRemove } from "@fortawesome/free-solid-svg-icons
 import { Pagination, } from "antd";
 import classNames from "classnames";
 import cropImage from "../../utils/cropImage.jsx";
+import { useNavigate } from "react-router-dom";
 
 
 export const ListarPessoas = () =>  {
@@ -14,7 +15,7 @@ export const ListarPessoas = () =>  {
   const [pesquisa, setPesquisa] = useState("");
   const startIndex = (currentPage - 1) * itensPorPagina;
   const endIndex = startIndex + itensPorPagina;
-
+  var edItem = "";
 const [currentItens, setCurrentItens] = useState([]);
 
 const [currentSort, setCurrentSort] = useState("asc");
@@ -38,7 +39,18 @@ useEffect(() => {
     setCurrentItens(itens.slice(startIndex, endIndex));
   }, [itensPorPagina]);
   
-   
+  const navegador = useNavigate()
+  function editarItem(edItem){
+    navegador(edItem)
+
+  }
+
+  useEffect(() => {
+
+  }, [edItem]);
+
+
+
   function getItensLengthCurrentPage() {
       const itensLengthCurrentPage = itens.length - startIndex;
       if (itensLengthCurrentPage > itensPorPagina) {
@@ -393,14 +405,21 @@ useEffect(() => {
                       {item.employment.title}
                     </td>
                     <td>
-                    <a>
+                    {/* <a> */}
                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    </a> 
-                    <button >
-                       <FontAwesomeIcon
-                            className="p-2 w-4 h-4 bg-violet-700 rounded-full text-white"
-                            icon={faFilePdf}/>
+                    <button key={item.id}>
+                      <FontAwesomeIcon
+                      className="p-2 w-4 h-4 bg-violet-700 rounded-full text-white"
+                      icon={faFilePdf}
+                      onClick={() => {editarItem("/Editar/${item.id}")}  }                  
+                      
+                      
+                      
+                      />
+
+           
                       </button>
+                      
                       &nbsp;&nbsp;
                       <button id="btnRemove">
                         <FontAwesomeIcon
@@ -413,6 +432,7 @@ useEffect(() => {
                             salvarDadosLocalStorage(result);
                             setItens(result);
                             setCurrentItens(result.slice(startIndex, endIndex));
+                            
                           }}
                           />
                       </button>
